@@ -57,13 +57,9 @@ function prepararOrdenNueva(orden) {
   orden.set('piezas', JSON.stringify([]));
 }
 
-function prepararPresupuesto(orden, datosEnviados) {
+function prepararPresupuesto(orden, importeEnviado) {
   const { diagnostico, manoObra, piezas } = presupuestoDe(orden);
-  const importeEnviado = datosEnviados.manoObra;
-  const importeValido = Number.isFinite(manoObra) && (
-    typeof importeEnviado === 'number' && importeEnviado === manoObra ||
-    typeof importeEnviado === 'string' && importeEnviado.trim() !== '' && Number(importeEnviado) === manoObra
-  );
+  const importeValido = Number.isFinite(importeEnviado) && importeEnviado === manoObra;
 
   if (!diagnostico.trim() || !importeValido || manoObra < 0 || !Array.isArray(piezas)) {
     throw new BadRequestError('Completa el diagnóstico, la mano de obra y la lista de piezas.');
@@ -88,7 +84,7 @@ function prepararPresupuesto(orden, datosEnviados) {
   }))));
 }
 
-function validarActualizacion(ordenActual, ordenPropuesta, datosEnviados) {
+function validarActualizacion(ordenActual, ordenPropuesta, importeEnviado) {
   if (datosDe(ordenActual) !== datosDe(ordenPropuesta.original())) {
     throw new BadRequestError('La orden cambió en otra solicitud. Actualiza la página e inténtalo de nuevo.');
   }
@@ -106,7 +102,7 @@ function validarActualizacion(ordenActual, ordenPropuesta, datosEnviados) {
 
   limpiarRecepcion(ordenPropuesta);
   if (estadoActual === 'en_diagnostico' && estadoPropuesto === 'presupuestada') {
-    prepararPresupuesto(ordenPropuesta, datosEnviados);
+    prepararPresupuesto(ordenPropuesta, importeEnviado);
   } else if (JSON.stringify(presupuestoDe(ordenActual)) !== JSON.stringify(presupuestoDe(ordenPropuesta))) {
     throw new BadRequestError('El presupuesto solo se escribe al pasar a presupuestada.');
   }

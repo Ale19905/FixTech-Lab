@@ -15,10 +15,22 @@ onRecordUpdateRequest((solicitud) => {
       solicitud.app = appTransaccion;
       const ordenPropuesta = solicitud.record;
       const ordenActual = appTransaccion.findRecordById('ordenes', ordenPropuesta.id);
-      validarActualizacion(ordenActual, ordenPropuesta, solicitud.requestInfo().body);
-
       const estadoAnterior = ordenActual.getString('estado');
       const estadoNuevo = ordenPropuesta.getString('estado');
+
+      // PocketBase convierte valores no numéricos a cero al preparar el campo.
+      let importeEnviado;
+      if (estadoAnterior === 'en_diagnostico' && estadoNuevo === 'presupuestada') {
+        const presupuestoEnviado = new DynamicModel({ manoObra: nullFloat() });
+        try {
+          solicitud.bindBody(presupuestoEnviado);
+        } catch (_) {
+          throw new BadRequestError('La mano de obra debe ser un número.');
+        }
+        importeEnviado = JSON.parse(toString(presupuestoEnviado)).manoObra;
+      }
+      validarActualizacion(ordenActual, ordenPropuesta, importeEnviado);
+
       if (estadoAnterior !== estadoNuevo) {
         registrarCambio(appTransaccion, ordenPropuesta, estadoAnterior, estadoNuevo);
       }
