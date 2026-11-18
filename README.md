@@ -89,7 +89,7 @@ curl -i -X PATCH http://127.0.0.1:8090/api/collections/ordenes/records/ordendemo
   -d '{"estado":"aprobada"}'
 ```
 
-Consulta un presupuesto e historial guardados con:
+Ejecuta el siguiente comando para consultar el presupuesto y el historial de una orden.
 
 ```bash
 curl http://127.0.0.1:8090/api/taller/ordenes/ordendemopc0002
