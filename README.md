@@ -1,100 +1,134 @@
 # Taller de reparaciones
 
-Aplicación interna para registrar equipos, consultar órdenes y seguirlas desde la recepción hasta la entrega. El frontend usa React, Vite y React Router. PocketBase almacena clientes, órdenes, fotos e historial. El personal entra directamente al panel.
+Aplicación interna para registrar equipos y seguir las órdenes desde la recepción hasta la entrega. El frontend usa React, Vite y React Router. PocketBase almacena los clientes, las órdenes, las fotos y el historial.
 
 ## Requisitos
 
 - Node.js 22.12 o posterior y npm.
-- [PocketBase 0.40.6](https://github.com/pocketbase/pocketbase/releases/tag/v0.40.6), en la variante de tu sistema operativo y arquitectura.
+- El ejecutable de PocketBase para tu sistema operativo y arquitectura. [PocketBase 0.40.6](https://github.com/pocketbase/pocketbase/releases/tag/v0.40.6)
 
-## Puesta en marcha
+## Arranque en modo desarrollo
 
-1. Descomprime el ZIP. Extrae el ejecutable de PocketBase y colócalo en la carpeta `taller-reparaciones`, junto a `package.json`, `pb_migrations` y `pb_hooks`.
-2. Abre una terminal en esa carpeta y ejecuta `npm ci`.
-3. En la primera terminal, inicia PocketBase. En Linux o macOS, si hace falta, da permiso de ejecución con `chmod +x pocketbase`.
+Descomprime el proyecto y coloca `pocketbase.exe` en Windows, o `pocketbase` en Linux o macOS, en la misma carpeta que `package.json`, `pb_migrations/` y `pb_hooks/`. Ejecuta los comandos desde esa carpeta.
+
+1. Instala las dependencias con `npm ci` o `npm install` .
+2. En la primera terminal, inicia PocketBase y déjalo en ejecución.
+
+   **Windows (CMD)**
+
+   ```cmd
+   pocketbase.exe serve --http=127.0.0.1:8090
+   ```
+
+   En PowerShell, usa `.\pocketbase.exe` como nombre del ejecutable.
 
    **Linux o macOS**
 
    ```bash
+   chmod +x pocketbase
    ./pocketbase serve --http=127.0.0.1:8090
    ```
 
-   **Windows PowerShell**
-
-   ```powershell
-   .\pocketbase.exe serve --http=127.0.0.1:8090
-   ```
-
-   PocketBase crea `pb_data/`, aplica la migración y carga los hooks al iniciar. Puedes usar la aplicación y cargar los datos de ejemplo sin crear un superusuario.
-
-4. Con PocketBase en ejecución, abre una segunda terminal en la misma carpeta.
+3. En una segunda terminal, inicia Vite.
 
    ```bash
-   npm run datos:demo
    npm run dev
    ```
 
-5. Abre [http://localhost:5173](http://localhost:5173) o la dirección que indique Vite. La carga de ejemplo se puede omitir para empezar con una base vacía.
+4. Abre el taller en la URL que muestre Vite. Por defecto, usa [http://localhost:5173](http://localhost:5173).
 
-### Datos de ejemplo
+El taller abre directamente y funciona sin cuenta. Si visitas `http://127.0.0.1:8090/_/`, PocketBase muestra su panel de administración. Si necesitas usar ese panel por primera vez, abre el enlace de configuración que aparece en la terminal de PocketBase y crea una cuenta de superusuario.
 
-| Cliente | Teléfono | Equipo | Etapa inicial del ejemplo |
+En desarrollo, Vite reenvía las peticiones de `/api` a `http://127.0.0.1:8090`. Si PocketBase se ejecuta en otra dirección, copia `.env.example` a `.env.local`, configura `VITE_POCKETBASE_URL` y reinicia Vite.
+
+## Datos de ejemplo
+
+Al iniciar, PocketBase crea `pb_data/` y aplica las migraciones pendientes en orden.
+
+| Migración | Qué hace |
+| --- | --- |
+| `1760000000_crear_colecciones.js` | Crea las colecciones `clientes`, `ordenes` y `eventos`, con sus relaciones y reglas de acceso. |
+| `1760000001_cargar_datos_demo.js` | Registra dos clientes, tres órdenes y sus cambios de etapa. |
+
+En **Órdenes** puedes comprobar estos registros después del primer arranque.
+
+| Cliente | Equipo | Etapa inicial | Cambios en el historial |
 | --- | --- | --- | --- |
-| Ana Torres | 555-0101 | Samsung Galaxy A54 | Solicitada |
-| Marcos Díaz | 555-0102 | Laptop Lenovo IdeaPad | Presupuestada |
-| Ana Torres | 555-0101 | Televisor LG 43″ | Lista |
+| Ana Torres | Samsung Galaxy A54 | Solicitada | 0 |
+| Marcos Díaz | Laptop Lenovo IdeaPad | Presupuestada | 2 |
+| Ana Torres | Televisor LG 43″ | Lista | 5 |
 
-El script utiliza identificadores fijos y avanza las órdenes por la API, así que el historial de ejemplo se crea con los mismos hooks que el historial real. Se puede ejecutar de nuevo sin duplicar los clientes ni las órdenes. Si una orden ya pasó a una etapa fuera del recorrido del ejemplo, conserva ese avance.
+Si actualizas desde la versión que cargaba los ejemplos con un script, conserva `pb_data/`, copia la segunda migración a `pb_migrations/` y vuelve a iniciar PocketBase. La migración usa los mismos identificadores, añade los ejemplos que falten y conserva el avance de las órdenes existentes. Al revertir la segunda migración se conservan los registros que ya se hayan cargado.
 
-### Compilar y servir con PocketBase
+### Probar el primer arranque con una base nueva
 
-Ejecuta `npm run build`. Detén la instancia de PocketBase que estabas usando y vuelve a abrirla con `--publicDir=dist`.
+1. Detén PocketBase con **Ctrl+C**.
+2. Renombra `pb_data` a `pb_data_respaldo`. Esa carpeta contiene los datos, las fotos, las cuentas de administración y el registro de las migraciones ya aplicadas.
+
+   **Windows (CMD)**
+
+   ```cmd
+   ren pb_data pb_data_respaldo
+   ```
+
+   **Linux o macOS**
+
+   ```bash
+   mv pb_data pb_data_respaldo
+   ```
+
+3. Inicia PocketBase con el comando habitual. Se creará un `pb_data` nuevo y se volverán a cargar los ejemplos. Recarga el taller en el navegador.
+
+Para recuperar el respaldo, detén PocketBase, renombra la carpeta nueva `pb_data` a `pb_data_prueba` y vuelve a nombrar `pb_data_respaldo` como `pb_data`. Inicia PocketBase de nuevo.
+
+## Cómo usar el taller
+
+1. En **Recepción**, elige un cliente existente o registra uno nuevo. Indica el equipo y la falla reportada. Puedes adjuntar hasta tres fotos JPG, PNG, WebP, GIF o AVIF de hasta 5 MB cada una.
+2. En el detalle de la orden, selecciona **Iniciar diagnóstico**. Para presupuestar, escribe el diagnóstico, la mano de obra y las piezas. Si el trabajo no requiere piezas, deja la lista vacía.
+3. Registra la decisión del cliente. Si aprueba, inicia la reparación, marca el equipo como listo y registra la entrega. El rechazo cierra la orden. La cancelación está disponible mientras la orden esté solicitada.
+4. En **Órdenes** puedes filtrar por etapa y buscar por equipo, código, cliente o teléfono. El detalle muestra el presupuesto, las fotos y el historial con fecha y hora.
+
+Cada pieza tiene una descripción, una cantidad entera positiva y un precio unitario no negativo. El frontend calcula el total sumando la mano de obra y los subtotales de las piezas. Los importes se muestran sin símbolo de moneda.
+
+## Compilar y servir con PocketBase
+
+Ejecuta `npm run build`, detén la instancia anterior de PocketBase y arráncala con `--publicDir=dist` para servir la compilación.
+
+**Windows (CMD)**
+
+```cmd
+pocketbase.exe serve --http=127.0.0.1:8090 --publicDir=dist
+```
+
+**Linux o macOS**
 
 ```bash
 ./pocketbase serve --http=127.0.0.1:8090 --publicDir=dist
 ```
 
-En PowerShell usa `.\pocketbase.exe` en lugar de `./pocketbase`. Abre [http://127.0.0.1:8090](http://127.0.0.1:8090). PocketBase sirve el frontend, la API y las fotos desde ese mismo origen. La URL de detalle funciona al recargar porque PocketBase redirige las rutas de la SPA a `index.html`.
-
-En desarrollo Vite redirige `/api` a `127.0.0.1:8090`. Si necesitas otra dirección, copia `.env.example` a `.env.local`, ajusta `VITE_POCKETBASE_URL` y reinicia Vite o vuelve a compilar. Para el script de demostración puedes indicar el mismo servidor mediante la variable `POCKETBASE_URL`.
-
-## Cómo usar la aplicación
-
-1. En **Recepción**, elige un cliente existente o registra uno nuevo. Escribe el equipo y la falla reportada. Puedes adjuntar hasta tres fotos JPG, PNG, WebP, GIF o AVIF de hasta 5 MB cada una.
-2. Abre la orden y selecciona **Iniciar diagnóstico**. Registra el diagnóstico, la mano de obra y las piezas. Usa una lista vacía si el trabajo no requiere piezas.
-3. Registra la aprobación o el rechazo del cliente. Si aprueba, inicia la reparación, marca el equipo como listo y registra la entrega. Si el cliente pide cancelarla antes del diagnóstico, usa **Cancelar orden**.
-4. Consulta **Órdenes** para filtrar por etapa o buscar por código, equipo o datos del cliente. El detalle muestra el presupuesto, las fotos y el historial con fecha y hora.
-
-Los importes se muestran sin símbolo de moneda porque el enunciado no fija una. Cada pieza usa `{ descripcion, cantidad, precio }`, con una cantidad entera positiva y un precio unitario no negativo. El frontend calcula el total sumando la mano de obra y los subtotales de cada pieza.
+En este modo, el taller se abre en [http://127.0.0.1:8090](http://127.0.0.1:8090). PocketBase sirve el frontend, la API y las fotos desde el mismo origen. Las rutas de detalle también funcionan al recargar.
 
 ## Estructura y reglas de negocio
 
-- `src/pages/` contiene el panel, la bandeja, la recepción, el detalle y la página de rutas desconocidas.
-- `src/components/` contiene los componentes reutilizables, los formularios y el diseño común con `Outlet`.
-- `src/services/` concentra las peticiones `fetch` y la sincronización con PocketBase. La interfaz vuelve a consultar los datos al abrir cada vista y al volver a una pestaña visible.
-- `pb_migrations/` define `clientes`, `ordenes` y `eventos`, sus relaciones, las fotos y las reglas de acceso. `created` y `updated` son fechas automáticas de PocketBase en las órdenes. Los eventos usan `created` como fecha del cambio.
-- `pb_hooks/taller.pb.js` conecta los hooks, la recepción y la lectura del detalle. `pb_hooks/reglas-ordenes.js` valida la etapa inicial, las transiciones y el presupuesto.
+- `src/pages/` contiene el panel, la bandeja de órdenes, la recepción, el detalle y la página para rutas desconocidas.
+- `src/components/` reúne los formularios, los componentes reutilizables y el diseño común con `Outlet`.
+- `src/services/` concentra las solicitudes `fetch` a PocketBase y la actualización de los datos al abrir una vista o volver a una pestaña visible.
+- `pb_migrations/` versiona el esquema y la carga de ejemplos. Las órdenes tienen fechas automáticas de creación y actualización. Cada evento registra la fecha de su cambio de etapa.
+- `pb_hooks/taller.pb.js` y `pb_hooks/reglas-ordenes.js` implementan las reglas de recepción, presupuesto y transiciones.
 
-El cambio de etapa y su evento se guardan en una sola transacción. Si falla el guardado de la orden, el evento se revierte. El detalle lee la orden y el historial dentro de otra transacción. La creación de un cliente nuevo y su orden de recepción también es atómica.
+El cambio de etapa y su evento se guardan en una sola transacción. Si falla el guardado de la orden, el evento se revierte. El presupuesto se guarda una sola vez y las órdenes cerradas quedan bloqueadas. La API bloquea la creación manual, la edición y la eliminación de eventos, así como la eliminación de órdenes.
 
-PocketBase permite consultar el historial. La API pública bloquea la creación manual, edición y eliminación de eventos y la eliminación de órdenes. Los hooks validan las actualizaciones directas, bloquean los cambios a órdenes cerradas y permiten guardar el presupuesto una sola vez. La configuración de arranque escucha en `127.0.0.1`, ya que el sistema del taller funciona sin autenticación.
+### Comprobar la API
 
-### Comprobación por la API
+Con PocketBase en ejecución, consulta el presupuesto y el historial de la laptop de ejemplo.
 
-Con los datos de ejemplo cargados, esta petición al servidor debe devolver `400` porque intenta pasar de solicitada a aprobada directamente.
-
-```bash
-curl -i -X PATCH http://127.0.0.1:8090/api/collections/ordenes/records/ordendemomv0003 \
-  -H 'Content-Type: application/json' \
-  -d '{"estado":"aprobada"}'
+```text
+http://127.0.0.1:8090/api/taller/ordenes/ordendemopc0002
 ```
 
-Ejecuta el siguiente comando para consultar el presupuesto y el historial de una orden.
+Para comprobar la validación de etapas, intenta pasar la orden del Samsung directamente de `solicitada` a `aprobada` en una base recién inicializada. La API devuelve `400`.
 
-```bash
-curl http://127.0.0.1:8090/api/taller/ordenes/ordendemopc0002
+```cmd
+curl.exe -i -X PATCH http://127.0.0.1:8090/api/collections/ordenes/records/ordendemomv0003 -H "Content-Type: application/json" -d "{\"estado\":\"aprobada\"}"
 ```
 
-## Historial local del proyecto
-
-El ZIP incluye el repositorio Git local. Tras extraerlo, `git log --oneline` muestra los commits de la implementación.

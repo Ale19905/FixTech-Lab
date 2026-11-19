@@ -7,7 +7,7 @@ export default function Estructura() {
       <aside className="lateral">
         <NavLink to="/" end className="marca">
           <span className="marca-simbolo" aria-hidden="true"><i /><i /><i /><i /></span>
-          <span>Taller<span className="marca-subtitulo">Gestión de reparaciones</span></span>
+          <span>FixTech Lab<span className="marca-subtitulo">Gestión de reparaciones</span></span>
         </NavLink>
         <nav className="navegacion" aria-label="Navegación principal">
           <NavLink to="/" end><span className="icono-nav icono-panel" aria-hidden="true" />Panel</NavLink>

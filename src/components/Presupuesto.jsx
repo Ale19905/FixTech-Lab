@@ -42,7 +42,7 @@ export function FormularioPresupuesto({ guardar, guardando }) {
         </label>
         <label className="campo mano-obra">
           <span>Mano de obra</span>
-          <input required type="number" min="0" step="any" inputMode="decimal" value={manoObra} onChange={(evento) => setManoObra(evento.target.value)} />
+          <input  placeholder='Ej: 250.00' required type="number" min="0" step="any" inputMode="decimal" value={manoObra} onChange={(evento) => setManoObra(evento.target.value)} />
         </label>
         <div className="cabecera-piezas">
           <h3>Piezas</h3>
