@@ -9,7 +9,7 @@ Aplicación interna para registrar equipos y seguir las órdenes desde la recepc
 
 ## Arranque en modo desarrollo
 
-Descomprime el proyecto y coloca `pocketbase.exe` en Windows, o `pocketbase` en Linux o macOS, en la misma carpeta que `package.json`, `pb_migrations/` y `pb_hooks/`. Ejecuta los comandos desde esa carpeta.
+Clonar el repo y coloca `pocketbase.exe` en Windows, o `pocketbase` en Linux o macOS, en la misma carpeta que `package.json`, `pb_migrations/` y `pb_hooks/`. Ejecuta los comandos desde esa carpeta.
 
 1. Instala las dependencias con `npm ci` o `npm install` .
 2. En la primera terminal, inicia PocketBase y déjalo en ejecución.
